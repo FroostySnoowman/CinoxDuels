@@ -1,0 +1,601 @@
+on load:
+	set {arena1.use} to false
+	set {arena2.use} to false
+	set {arena3.use} to false
+
+on inventory click:
+	if name of event-inventory is "&9&lDuels":
+		if index of event-slot = 0:
+			cancel event
+			close player's inventory
+			set {p} to metadata "duel" of player
+			set metadata "map" of {p} to "classicmap"
+			set {duels.%player%.inviteduel.%{p}%} to true
+			set {duels.invited.%player%} to true
+			send "&aInvite has been sent to &e%{p}%&a!"
+			send "&e&lInvite expires in &c30&e seconds!"
+			send "&a%player% wants challenge with you!" to {p}
+			send "&e&l/duel (accept/reject) %player%" to {p}
+			wait "30 seconds" parsed as timespan
+			{duels.%player%.inviteduel.%{p}%} is true
+			send "&cYour duel invite to &3%{p}% &cis expired" to player
+			send "&cYour duel invite from &3%player% &cis expired" to {p}
+			clear metadata value "map" of {p}
+			set {duels.%player%.inviteduel.%{p}%} to false
+			set {duels.invited.%player%} to false
+			stop
+		if index of event-slot = 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51 or 53:
+			cancel event
+			close player's inventory
+		if index of event-slot = 2:
+			cancel event
+			close player's inventory
+		if index of event-slot = 4:
+			cancel event
+			close player's inventory
+		if index of event-slot = 6:
+			cancel event
+			close player's inventory
+		if index of event-slot = 8:
+			cancel event
+			close player's inventory
+		if index of event-slot = 10:
+			cancel event
+			close player's inventory
+		if index of event-slot = 12:
+			cancel event
+			close player's inventory
+		if index of event-slot = 49:
+			cancel event
+			close player's inventory
+
+command /duel [<text>] [<player>]:
+	aliases: /duels
+	usage: '&a/duel &f(&einvite&f/&aaccept&f/&creject&f) &d<player>'
+	permission: cinox.duels
+	permission message: &cYou don't have the correct permissions to use this command!
+	trigger:
+		if arg-1 isn't set:
+			send "&cInvalid usage!"
+			send "&a/duel &f(&einvite&f/&baccept&f/&creject&f) &d<player>"
+			stop
+		if arg-1 is "invite":
+			if arg-2 isn't set:
+				send "&cInvalid usage!"
+				send "&a/duel &einvite &d<player>"
+				stop
+			else:
+				if arg-2 isn't online:
+					send "&cThat player isn't online!"
+					stop
+				else:
+					if arg-2 is player:
+						send "&cYou can't invite yourself to a duel!"
+					else:
+						if {duels.invited.%arg-2%} is true:
+							send "&e%arg-2% &chas already been invited to a duel, ask them to reject it or invite you!"
+							stop
+						else:
+							set metadata "duel" of player to arg-2
+							set {_gui} to a new chest inventory with 6 row with name "&9&lDuels"
+							set slot 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, and 53 of {_gui} to light gray stained glass pane named " "
+							set slot 0 of {_gui} to glowing diamond sword named "&a&lClassic"
+							if player has permission "duels.other":
+								set slot 2 of {_gui} to glowing golden apple named "&b&lFFA"
+								set slot 4 of {_gui} to glowing diamond chestplate named "&c&lDiamond Crystal"
+								set slot 6 of {_gui} to glowing ender crystal named "&4&lNetherite Crystal"
+								set slot 8 of {_gui} to glowing netherite sword named "&d&lOP"
+								set slot 10 of {_gui} to glowing splash potion named "&e&lDiamond Pot"
+								set slot 12 of {_gui} to glowing dirt named "&a&lClouts" with lore "&7&oMade by AshteR"
+								set slot 49 of {_gui} to glowing barrier named "&4&lClose"
+							open {_gui} to player
+		if arg-1 is "accept":
+			if arg-2 isn't set:
+				send "&cInvalid usage!"
+				send "&a/duel &baccept &d<player>"
+				stop
+			else:
+				if arg-2 isn't online:
+					send "&cThat player isn't online!"
+					stop
+				else:
+					if arg-2 is player:
+						send "&cYou can't accept your own duel request!"
+					else:
+						if {duels.%arg-2%.inviteduel.%player%} is true:
+							set {duels.%arg-2%.inviteduel.%player%} to false
+							set {map} to metadata "map" of player
+							if {map} is "classicmap":
+								clear metadata value "map" of player
+								if {arena1.use} is false:
+									set {arena1.use} to true
+									add player to {duels::in-duel::1::*}
+									add arg-2 to {duels::in-duel::1::*}
+									set {induel1.%player's uuid%} to true
+									set {induel1.%player's uuid%.player2} to arg-2
+									set {induel1.%arg-2's uuid%} to true
+									set {induel1.%arg-2's uuid%.player2} to player
+									add 1 to {gamesp.%arg-2's uuid%}
+									add 1 to {gamesp.%player's uuid%}
+									set {godcheckplayer} to placeholder "%%essentials_godmode%%" from player
+									set {staffcheck} to placeholder "%%staffplusplus_session_inStaffMode_@player=%player%%%" from player
+									set {vcheckarg2} to placeholder "%%supervanish_isvanished%%" from player
+									if {godcheckplayer} is "yes":
+										make console execute command "godmode %player% disable"
+									if {staffcheck} is "true":
+										make player execute command "staff"
+									if {vcheckarg2} is "Yes":
+										make console execute command "vanish disable %player%"
+									set {godcheckarg2} to placeholder "%%essentials_godmode%%" from arg-2
+									set {staffcheckarg2} to placeholder "%%staffplusplus_session_inStaffMode_@player=%arg-2%%%" from arg-2
+									set {vcheckarg2} to placeholder "%%supervanish_isvanished%%" from arg-2
+									if {godcheckarg2} is "yes":
+										make console execute command "godmode %arg-2% disable"
+									if {staffcheckarg2} is "true":
+										make arg-2 execute command "staff"
+									if {vcheckarg2} is "Yes":
+										make console execute command "vanish disable %arg-2%"
+									send "&aYour duel invite has accepted by &e%player%" to arg-2
+									send "&aYou've accepted the duel invite by &e%arg-2%"
+									send "&aTeleporting you in a few seconds..." to arg-2
+									send "&aTeleporting you in a few seconds..."
+									wait 3 seconds
+									clear player's inventory
+									clear arg-2's inventory
+									make console execute command "effect clear %player%"
+									make console execute command "effect clear %arg-2%"
+									set {_loc1} to location(-48, 116, 1104, world "world_the_end")
+									set {_loc2} to location(45, 116, 1010, world "world_the_end")
+									set pitch of {_loc1} to 0
+									set yaw of {_loc1} to -135
+									set pitch of {_loc2} to 0
+									set yaw of {_loc2} to 45
+									teleport player to {_loc1}
+									teleport arg-2 to {_loc2}
+									set gamemode of arg-2 to survival
+									set gamemode of player to survival
+									set helmet of player to diamond helmet
+									set chestplate of player to diamond chestplate
+									set leggings of player to diamond leggings
+									set boots of player to diamond boots
+									set slot 0 of player to diamond sword
+									set slot 1 of player to diamond axe
+									set slot 2 of player to crossbow
+									set slot 3 of player to 10 arrow
+									set slot 4 of player to 64 cooked beef
+									set offhand tool of player to shield
+									set the player's food level to 10
+									set player's health to 20
+									set helmet of arg-2 to diamond helmet
+									set chestplate of arg-2 to diamond chestplate
+									set leggings of arg-2 to diamond leggings
+									set boots of arg-2 to diamond boots
+									set slot 0 of arg-2 to diamond sword
+									set slot 1 of arg-2 to diamond axe
+									set slot 2 of arg-2 to crossbow
+									set slot 3 of arg-2 to 10 arrow
+									set slot 4 of arg-2 to 64 cooked beef
+									set offhand tool of arg-2 to shield
+									set the arg-2's food level to 10
+									set arg-2's health to 20
+									stop
+								if {arena2.use} is false:
+									set {arena2.use} to true
+									add player to {duels::in-duel::2::*}
+									add arg-2 to {duels::in-duel::2::*}
+									set {induel2.%player's uuid%} to true
+									set {induel2.%player's uuid%.player2} to arg-2
+									set {induel2.%arg-2's uuid%} to true
+									set {induel2.%arg-2's uuid%.player2} to player
+									set {godcheckplayer} to placeholder "%%essentials_godmode%%" from player
+									set {staffcheck} to placeholder "%%staffplusplus_session_inStaffMode_@player=%player%%%" from player
+									set {vcheckarg2} to placeholder "%%supervanish_isvanished%%" from player
+									if {godcheckplayer} is "yes":
+										make console execute command "godmode %player% disable"
+									if {staffcheck} is "true":
+										make player execute command "staff"
+									if {vcheckarg2} is "Yes":
+										make console execute command "vanish disable %player%"
+									set {godcheckarg2} to placeholder "%%essentials_godmode%%" from arg-2
+									set {staffcheckarg2} to placeholder "%%staffplusplus_session_inStaffMode_@player=%arg-2%%%" from arg-2
+									set {vcheckarg2} to placeholder "%%supervanish_isvanished%%" from arg-2
+									if {godcheckarg2} is "yes":
+										make console execute command "godmode %arg-2% disable"
+									if {staffcheckarg2} is "true":
+										make arg-2 execute command "staff"
+									if {vcheckarg2} is "Yes":
+										make console execute command "vanish disable %arg-2%"
+									send "&aYour duel invite has been accepted by &e%player%" to arg-2
+									send "&aYou've accepted the duel invite by &e%arg-2%"
+									send "&aTeleporting you in a few seconds..." to arg-2
+									send "&aTeleporting you in a few seconds..."
+									wait 3 seconds
+									clear player's inventory
+									clear arg-2's inventory
+									make console execute command "effect clear %player%"
+									make console execute command "effect clear %arg-2%"
+									add 1 to {gamesp.%arg-2's uuid%}
+									add 1 to {gamesp.%player's uuid%}
+									set {_loc1} to location(35, 117, 766, world "world_the_end")
+									set {_loc2} to location(-58, 117, 860, world "world_the_end")
+									set pitch of {_loc1} to 0
+									set yaw of {_loc1} to 45
+									set pitch of {_loc2} to 0
+									set yaw of {_loc2} to -135
+									teleport player to {_loc1}
+									teleport arg-2 to {_loc2}
+									set gamemode of arg-2 to survival
+									set gamemode of player to survival
+									set helmet of player to diamond helmet
+									set chestplate of player to diamond chestplate
+									set leggings of player to diamond leggings
+									set boots of player to diamond boots
+									set slot 0 of player to diamond sword
+									set slot 1 of player to diamond axe
+									set slot 2 of player to crossbow
+									set slot 3 of player to 10 arrow
+									set slot 4 of player to 64 cooked beef
+									set offhand tool of player to shield
+									set the player's food level to 10
+									set player's health to 20
+									set helmet of arg-2 to diamond helmet
+									set chestplate of arg-2 to diamond chestplate
+									set leggings of arg-2 to diamond leggings
+									set boots of arg-2 to diamond boots
+									set slot 0 of arg-2 to diamond sword
+									set slot 1 of arg-2 to diamond axe
+									set slot 2 of arg-2 to crossbow
+									set slot 3 of arg-2 to 10 arrow
+									set slot 4 of arg-2 to 64 cooked beef
+									set offhand tool of arg-2 to shield
+									set the arg-2's food level to 10
+									set arg-2's health to 20
+									stop
+								if {arena3.use} is false:
+									set {arena3.use} to true
+									add player to {duels::in-duel::3::*}
+									add arg-2 to {duels::in-duel::3::*}
+									set {induel3.%player's uuid%} to true
+									set {induel3.%player's uuid%.player2} to arg-2
+									set {induel3.%arg-2's uuid%} to true
+									set {induel3.%arg-2's uuid%.player2} to player
+									add 1 to {gamesp.%arg-2's uuid%}
+									add 1 to {gamesp.%player's uuid%}
+									set {godcheckplayer} to placeholder "%%essentials_godmode%%" from player
+									set {staffcheck} to placeholder "%%staffplusplus_session_inStaffMode_@player=%player%%%" from player
+									set {vcheckarg2} to placeholder "%%supervanish_isvanished%%" from player
+									if {godcheckplayer} is "yes":
+										make console execute command "godmode %player% disable"
+									if {staffcheck} is "true":
+										make player execute command "staff"
+									if {vcheckarg2} is "Yes":
+										make console execute command "vanish disable %player%"
+									set {godcheckarg2} to placeholder "%%essentials_godmode%%" from arg-2
+									set {staffcheckarg2} to placeholder "%%staffplusplus_session_inStaffMode_@player=%arg-2%%%" from arg-2
+									set {vcheckarg2} to placeholder "%%supervanish_isvanished%%" from arg-2
+									if {godcheckarg2} is "yes":
+										make console execute command "godmode %arg-2% disable"
+									if {staffcheckarg2} is "true":
+										make arg-2 execute command "staff"
+									if {vcheckarg2} is "Yes":
+										make console execute command "vanish disable %arg-2%"
+									send "&aYour duel invite has been accepted by &e%player%" to arg-2
+									send "&aYou've accepted the duel invite by &e%arg-2%"
+									send "&aTeleporting you in a few seconds..." to arg-2
+									send "&aTeleporting you in a few seconds..."
+									wait 3 seconds
+									clear player's inventory
+									clear arg-2's inventory
+									make console execute command "effect clear %player%"
+									make console execute command "effect clear %arg-2%"
+									set {_loc1} to location(35, 117, 766, world "world_the_end")
+									set {_loc2} to location(-58, 117, 860, world "world_the_end")
+									set pitch of {_loc1} to 0
+									set yaw of {_loc1} to 45
+									set pitch of {_loc2} to 0
+									set yaw of {_loc2} to -135
+									teleport player to {_loc1}
+									teleport arg-2 to {_loc2}
+									set gamemode of arg-2 to survival
+									set gamemode of player to survival
+									set helmet of player to diamond helmet
+									set chestplate of player to diamond chestplate
+									set leggings of player to diamond leggings
+									set boots of player to diamond boots
+									set slot 0 of player to diamond sword
+									set slot 1 of player to diamond axe
+									set slot 2 of player to crossbow
+									set slot 3 of player to 10 arrow
+									set slot 4 of player to 64 cooked beef
+									set offhand tool of player to shield
+									set the player's food level to 10
+									set player's health to 20
+									set helmet of arg-2 to diamond helmet
+									set chestplate of arg-2 to diamond chestplate
+									set leggings of arg-2 to diamond leggings
+									set boots of arg-2 to diamond boots
+									set slot 0 of arg-2 to diamond sword
+									set slot 1 of arg-2 to diamond axe
+									set slot 2 of arg-2 to crossbow
+									set slot 3 of arg-2 to 10 arrow
+									set slot 4 of arg-2 to 64 cooked beef
+									set offhand tool of arg-2 to shield
+									set the arg-2's food level to 10
+									set arg-2's health to 20
+									stop
+								else:
+									send "&cThere are no active arenas!"
+									send "&cThere are no active arenas!" to arg-2
+									send "&eArena 1 Being Used: &a%{arena1.use}% &eArena 2 Being Used: &a%{arena2.use}% &eArena 3 Being Used: &a%{arena3.use}%"
+								send "&eArena 1 Being Used: &a%{arena1.use}% &eArena 2 Being Used: &a%{arena2.use}% &eArena 3 Being Used: &a%{arena3.use}%" to arg-2
+							else:
+								send "&4Duel failed. Reason: &cThat is an invalid map!"
+								send "&4Duel failed. Reason: &cThat is an invalid map!" to arg-2
+								send "%{map}%" to arg-2
+						else:
+							send "&cThere is no active duel request!"
+		if arg-1 is "reject":
+			if arg-2 isn't set:
+				send "&cInvalid usage!"
+				send "&a/duel &creject &d<player>"
+				stop
+			else:
+				if arg-2 isn't online:
+					send "&cThat player isn't online!"
+					stop
+				else:
+					if arg-2 is player:
+						send "&cYou can't reject your own duel request!"
+					else:
+						if {duels.%arg-2%.inviteduel.%player%} is true:
+							set {duels.%arg-2%.inviteduel.%player%} to false
+							send "&cYou've rejected a duels invite from &6%arg-2%&c!"
+							send "&6%player% &crejected your duels invite!" to arg-2
+							stop
+						else:
+							send "&cYou don't have an active duels request!"
+
+command /clearallarena:
+	permission: cinox.clearallarena
+	permission message: &cYou don't have the correct permissions to use this command!
+	trigger:
+		set {arena1.use} to false
+		set {arena2.use} to false
+		set {arena3.use} to false
+		send "&aDone!"
+
+command /dueltest [<player>]:
+	trigger:
+		open chest with 1 row named "&bDueling: &e%arg-1%" to player
+		format slot 0 of player with red glass named "&7" to close
+
+command /duelsprofile:
+  aliases: /duelsstats, /duelsstatistics, /duelstatistics, /duelstats
+  trigger:
+    if {gamesp.%player's uuid%} is not set:
+      set {gamesp.%player's uuid%} to 0
+    if {wins.%player's uuid%} is not set:
+      set {wins.%player's uuid%} to 0
+    if {loses.%player's uuid%} is not set:
+      set {loses.%player's uuid%} to 0
+    set {duelskdr.%player's uuid%} to {wins.%player's uuid%} / {loses.%player's uuid%}
+    wait 5 ticks
+    open chest with 1 row named "&3&lDuels Profile: &b%player%" to player
+    wait 3 ticks
+    format slot 0 of player with cyan stained glass pane named "&7" to close
+    format slot 1 of player with cyan stained glass pane named "&7" to close
+    format slot 2 of player with cyan stained glass pane named "&7" to close
+    format slot 3 of player with arrow named "&7Loses: &c&l%{loses.%player's uuid%}%" to close
+    format slot 4 of player with blaze rod named "&7Games played: &3&l%{gamesp.%player's uuid%}%" to close
+    format slot 5 of player with diamond named "&7Wins: &e&l%{wins.%player's uuid%}%" to close
+    format slot 6 of player with cyan stained glass pane named "&7" to close
+    format slot 7 of player with cyan stained glass pane named "&7" to close
+    format slot 8 of player with netherite sword named "&7KDR: &a&l%{duelskdr.%player's uuid%}%" to close
+
+command /profile:
+	aliases: /stats, /statistics
+	trigger:
+		if {kills::%player's uuid%} is not set:
+			set {kills::%player's uuid%} to 0
+		if {deaths::%player's uuid%} is not set:
+			set {deaths::%player's uuid%} to 0
+		set {kdr.%player's uuid%} to {kills::%player's uuid%} / {deaths::%player's uuid%}
+		wait 5 ticks
+		open chest with 1 row named "&2&lProfile: &a%player%" to player
+		wait 3 ticks
+		format slot 0 of player with lime stained glass pane named "&7" to close
+		format slot 1 of player with lime stained glass pane named "&7" to close
+		format slot 2 of player with lime stained glass pane named "&7" to close
+		format slot 3 of player with arrow named "&7Kills: &c&l%{kills::%player's uuid%}%" to close
+		format slot 4 of player with skull of player named "&b%player%" to close
+		format slot 5 of player with diamond named "&7Deaths: &e&l%{deaths::%player's uuid%}%" to close
+		format slot 6 of player with lime stained glass pane named "&7" to close
+		format slot 7 of player with lime stained glass pane named "&7" to close
+		format slot 8 of player with netherite sword named "&7KDR: &a&l%{kdr.%player's uuid%}%" to close
+		clear {kdr.%player's uuid%}
+
+
+on command:
+	if player's group is "Owner":
+		stop
+	else:
+		if {induel1.%player's uuid%} is true:
+			if command is "staff":
+				stop
+			else:
+				cancel event
+				send "&cYou can't use commands in a duel game!"
+		if {induel2.%player's uuid%} is true:
+			if command is "staff":
+				stop
+			else:
+				cancel event
+				send "&cYou can't use commands in a duel game!"
+		if {induel3.%player's uuid%} is true:
+			if command is "staff":
+				stop
+			else:
+				cancel event
+				send "&cYou can't use commands in a duel game!"
+
+on death:
+	victim is player
+	if {induel1.%victim's uuid%} is true:
+		clear {duels::in-duel::1::*}
+		set {duels.invited.%victim%} to false
+		set {duels.invited.%attacker%} to false
+		set {induel1.%victim's uuid%} to false
+		set {induel1.%attacker's uuid%} to false
+		add 1 to {wins.%attacker's uuid%}
+		add 1 to {loses.%victim's uuid%}
+		send title "&cDefeat!" with subtitle "&eBetter luck next time!" to victim
+		send title "&eVictory!" with subtitle "&eGG!" to attacker
+		set {arena1.use} to false
+		clear victim's inventory
+		clear attacker's inventory
+		set {_loc} to location(-112, 163, -29, world "world_the_end")
+		set pitch of {_loc} to 0
+		set yaw of {_loc} to 3
+		wait a tick
+		teleport victim to {_loc}
+		teleport attacker to {_loc}
+		wait a tick
+		force victim to respawn
+		set victim's health to 20
+		set attacker's health to 20
+		set the attacker's food level to 10
+		set the victim's food level to 10
+	if {induel2.%victim's uuid%} is true:
+		clear {duels::in-duel::2::*}
+		set {duels.invited.%victim%} to false
+		set {duels.invited.%attacker%} to false
+		set {induel2.%victim's uuid%} to false
+		set {induel2.%attacker's uuid%} to false
+		add 1 to {wins.%attacker's uuid%}
+		add 1 to {loses.%victim's uuid%}
+		send title "&cDefeat!" with subtitle "&eBetter luck next time!" to victim
+		send title "&eVictory!" with subtitle "&eGG!" to attacker
+		set {arena2.use} to false
+		clear victim's inventory
+		clear attacker's inventory
+		set {_loc} to location(-112, 163, -29, world "world_the_end")
+		set pitch of {_loc} to 0
+		set yaw of {_loc} to 3
+		wait a tick
+		teleport victim to {_loc}
+		teleport attacker to {_loc}
+		wait a tick
+		force victim to respawn
+		set victim's health to 20
+		set attacker's health to 20
+		set the attacker's food level to 10
+		set the victim's food level to 10
+	if {induel3.%victim's uuid%} is true:
+		clear {duels::in-duel::3::*}
+		set {duels.invited.%victim%} to false
+		set {duels.invited.%attacker%} to false
+		set {induel3.%victim's uuid%} to false
+		set {induel3.%attacker's uuid%} to false
+		add 1 to {wins.%attacker's uuid%}
+		add 1 to {loses.%victim's uuid%}
+		send title "&cDefeat!" with subtitle "&eBetter luck next time!" to victim
+		send title "&eVictory!" with subtitle "&eGG!" to attacker
+		set {arena3.use} to false
+		clear victim's inventory
+		clear attacker's inventory
+		set {_loc} to location(-112, 163, -29, world "world_the_end")
+		set pitch of {_loc} to 0
+		set yaw of {_loc} to 3
+		wait a tick
+		teleport victim to {_loc}
+		teleport attacker to {_loc}
+		wait a tick
+		force victim to respawn
+		set victim's health to 20
+		set attacker's health to 20
+		set the attacker's food level to 10
+		set the victim's food level to 10
+	else:
+		wait a tick
+		force victim to respawn
+#		clear victim's inventory
+		add 1 to {kills::%attacker's uuid%}
+		add 1 to {deaths::%victim's uuid%}
+		send "&cYou were killed by &e%attacker%&c." to victim
+		set health of attacker to maximum health of attacker
+		send "&aYou killed &e%victim%&a." to attacker
+		add 0.1 to {coins.%attacker%}
+
+command /resetstats [<player>]:
+	permission: cinox.admin
+	trigger:
+		set {kills::%player's uuid%} to 0
+		set {deaths::%player's uuid%} to 0
+		send "&aReset &e%player%&a's stats!"
+
+command /t:
+	trigger:
+		set {arena1.use} to false
+		set {arena2.use} to false
+		set {induel1.%player's uuid%} to false
+
+command /cleararena [<integer>]:
+	permission: cinox.cleararena
+	permission message: &cYou don't have the correct permissions to use this command!
+	trigger:
+		if arg-1 isn't set:
+			send "&cYou must mention an arena to clear!"
+			stop
+		if arg-1 is 1:
+			if {arena1.use} is true:
+				set {arena1.use} to false
+				send "&aDone!"
+			else:
+				send "&cThat arena isn't active!"
+		if arg-1 is 2:
+			if {arena2.use} is true:
+				set {arena2.use} to false
+				send "&aDone!"
+			else:
+				send "&cThat arena isn't active!"
+		else:
+			send "&cNo duels arena found!"
+
+command /11:
+	trigger:
+		send "%{duels::in-duel::1::*}%"
+
+on quit:
+	if {duels::in-duel::1::*} contains player:
+		loop {duels::in-duel::1::*}:
+			set {_loc} to location(-112, 163, -29, world "world_the_end")
+			set pitch of {_loc} to 0
+			set yaw of {_loc} to 3
+			wait a tick
+			teleport loop-value to {_loc}
+			set {induel1.%loop-value's uuid%} to false
+			set {arena1.use} to false
+			set {duels.invited.%loop-value%} to false
+		clear {duels::in-duel::1::*}
+	if {duels::in-duel::2::*} contains player:
+		loop {duels::in-duel::2::*}:
+			set {_loc} to location(-112, 163, -29, world "world_the_end")
+			set pitch of {_loc} to 0
+			set yaw of {_loc} to 3
+			wait a tick
+			teleport loop-value to {_loc}
+			set {induel1.%loop-value's uuid%} to false
+			set {arena2.use} to false
+			set {duels.invited.%loop-value%} to false
+		clear {duels::in-duel::2::*}
+	if {duels::in-duel::3::*} contains player:
+		loop {duels::in-duel::3::*}:
+			set {_loc} to location(-112, 163, -29, world "world_the_end")
+			set pitch of {_loc} to 0
+			set yaw of {_loc} to 3
+			wait a tick
+			teleport loop-value to {_loc}
+			set {induel1.%loop-value's uuid%} to false
+			set {arena3.use} to false
+			set {duels.invited.%loop-value%} to false
+		clear {duels::in-duel::3::*}
